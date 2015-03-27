@@ -47,6 +47,21 @@ class URandom implements \PasswordLib\Random\Source {
     }
 
     /**
+     * 
+     *  fallback function if /dev/random not in open_basdir
+     * /
+    protected function randomString($size)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $randomString = '';
+        for ($i = 0; $i < $size; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
+        return $randomString;
+    }
+
+    /**
      * Generate a random string of the specified size
      *
      * @param int $size The size of the requested random string
@@ -54,6 +69,10 @@ class URandom implements \PasswordLib\Random\Source {
      * @return string A string of the requested size
      */
     public function generate($size) {
+        if( ! @is_readable($this->file)){
+            return $this->randomString($size);
+        }        
+        
         if ($size == 0 || !file_exists($this->file)) {
             return str_repeat(chr(0), $size);
         }
